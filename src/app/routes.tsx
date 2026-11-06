@@ -17,12 +17,7 @@ import { BlogPage } from "./components/BlogPage";
 import { ArticlePage } from "./components/ArticlePage";
 import { AuthorPage } from "./components/AuthorPage";
 
-const chapterPaths: Record<string, string> = {
-  chicago: "/chapters/chicago",
-  michigan: "/chapters/ann-arbor",
-  newjersey: "/chapters/union-county",
-  northcarolina: "/chapters/north-carolina",
-};
+import { aboutPath, authorsPath, blogPath, chapterPaths } from "./pagePaths";
 
 function RootLayout() {
   const navigate = useNavigate();
@@ -112,14 +107,14 @@ export const router = createBrowserRouter([
     Component: RootLayout,
     children: [
       { index: true, Component: HomePage },
-      { path: "about", Component: AboutRoute },
-      { path: "chapters/chicago", Component: ChicagoPage },
-      { path: "chapters/ann-arbor", Component: MichiganPage },
-      { path: "chapters/union-county", Component: NewJerseyPage },
-      { path: "chapters/north-carolina", Component: NorthCarolinaPage },
-      { path: "blog", Component: BlogPage },
-      { path: "blog/:articleSlug", Component: ArticlePage },
-      { path: "authors/:authorSlug", Component: AuthorPage },
+      { path: aboutPath, Component: AboutRoute },
+      { path: chapterPaths.chicago, Component: ChicagoPage },
+      { path: chapterPaths.michigan, Component: MichiganPage },
+      { path: chapterPaths.newjersey, Component: NewJerseyPage },
+      { path: chapterPaths.northcarolina, Component: NorthCarolinaPage },
+      { path: blogPath, Component: BlogPage },
+      { path: `${blogPath}/:articleSlug`, Component: ArticlePage },
+      { path: `${authorsPath}/:authorSlug`, Component: AuthorPage },
       { path: "*", Component: NotFound },
     ],
   },

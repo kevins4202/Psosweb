@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Send, Mail, MapPin, Instagram } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -14,29 +13,6 @@ export function ContactSection({
   instagram?: string; 
   location?: string;
 } = {}) {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // This would typically send the form data to a backend
-    console.log('Form submitted:', formData);
-    alert('Thank you for your message! We\'ll get back to you soon.');
-    setFormData({ name: '', email: '', subject: '', message: '' });
-  };
-
   const contactInfo = [
     {
       icon: Mail,
@@ -139,7 +115,8 @@ export function ContactSection({
               <h3 className="text-2xl mb-8 text-gray-800">Send Us a Message</h3>
               
               <Card className="p-6 border-pink-100">
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form action={`https://formsubmit.co/${email}`} method="post" className="space-y-6">
+                  <input type="hidden" name="_subject" value="New Project Save Our Skin website message" />
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="name" className="block mb-2 text-gray-700">
@@ -150,8 +127,6 @@ export function ContactSection({
                         name="name"
                         type="text"
                         required
-                        value={formData.name}
-                        onChange={handleInputChange}
                         className="border-pink-200 focus:border-primary focus:ring-primary"
                         placeholder="Your full name"
                       />
@@ -165,8 +140,6 @@ export function ContactSection({
                         name="email"
                         type="email"
                         required
-                        value={formData.email}
-                        onChange={handleInputChange}
                         className="border-pink-200 focus:border-primary focus:ring-primary"
                         placeholder="your.email@example.com"
                       />
@@ -182,8 +155,6 @@ export function ContactSection({
                       name="subject"
                       type="text"
                       required
-                      value={formData.subject}
-                      onChange={handleInputChange}
                       className="border-pink-200 focus:border-primary focus:ring-primary"
                       placeholder="How can we help you?"
                     />
@@ -197,14 +168,17 @@ export function ContactSection({
                       id="message"
                       name="message"
                       required
-                      value={formData.message}
-                      onChange={handleInputChange}
                       className="border-pink-200 focus:border-primary focus:ring-primary min-h-32"
                       placeholder="Please share your questions, ideas, or how you'd like to get involved..."
                     />
                   </div>
                   
-                  <Button 
+                  <p className="text-sm text-gray-600">
+                    Your message is sent through FormSubmit. You can also email us at{" "}
+                    <a className="underline" href={`mailto:${email}`}>{email}</a>.
+                  </p>
+
+                  <Button
                     type="submit"
                     className="w-full bg-primary hover:bg-pink-600 text-white rounded-full py-3 text-lg transition-all duration-200 shadow-lg hover:shadow-xl"
                   >

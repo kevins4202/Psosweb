@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from "react";
+import type { FormEvent } from "react";
 import { Send, Mail, MapPin, Instagram } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -14,42 +14,18 @@ export function ContactSection({
   instagram?: string; 
   location?: string;
 } = {}) {
-  const sending = useRef(false);
-  const [pending, setPending] = useState(false);
-  const [result, setResult] = useState<"accepted" | "unconfirmed" | null>(null);
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function openEmailDraft(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (sending.current) return;
+    const data = new FormData(event.currentTarget);
+    const subject = encodeURIComponent(String(data.get("subject")));
+    const body = [
+      String(data.get("message")).replace(/\r?\n/g, "\r\n"),
+      "",
+      `Name: ${data.get("name")}`,
+      `Email: ${data.get("email")}`,
+    ].join("\r\n");
 
-    const form = event.currentTarget;
-    const data = Object.fromEntries(new FormData(form));
-    sending.current = true;
-    setPending(true);
-    setResult(null);
-
-    try {
-      const response = await fetch(`https://formsubmit.co/ajax/${email}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify(data),
-        signal: AbortSignal.timeout(12000),
-      });
-
-      if (!response.ok) throw new Error("FormSubmit request failed");
-      const receipt = await response.json();
-      if (receipt.success !== true && receipt.success !== "true") {
-        throw new Error("FormSubmit did not accept the submission");
-      }
-
-      form.reset();
-      setResult("accepted");
-    } catch {
-      setResult("unconfirmed");
-    } finally {
-      sending.current = false;
-      setPending(false);
-    }
+    window.location.href = `mailto:${email}?subject=${subject}&body=${encodeURIComponent(body)}`;
   }
 
   const contactInfo = [
@@ -154,89 +130,75 @@ export function ContactSection({
               <h3 className="text-2xl mb-8 text-gray-800">Send Us a Message</h3>
               
               <Card className="p-6 border-pink-100">
-                <form onSubmit={handleSubmit}>
-                  <fieldset disabled={pending} className="space-y-6">
-                    <input type="hidden" name="_subject" value="New Project Save Our Skin website message" />
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="name" className="block mb-2 text-gray-700">
-                          Full Name *
-                        </label>
-                        <Input
-                          id="name"
-                          name="name"
-                          type="text"
-                          required
-                          className="border-pink-200 focus:border-primary focus:ring-primary"
-                          placeholder="Your full name"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="email" className="block mb-2 text-gray-700">
-                          Email Address *
-                        </label>
-                        <Input
-                          id="email"
-                          name="email"
-                          type="email"
-                          required
-                          className="border-pink-200 focus:border-primary focus:ring-primary"
-                          placeholder="your.email@example.com"
-                        />
-                      </div>
-                    </div>
-
+                <form onSubmit={openEmailDraft} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="subject" className="block mb-2 text-gray-700">
-                        Subject *
+                      <label htmlFor="name" className="block mb-2 text-gray-700">
+                        Full Name *
                       </label>
                       <Input
-                        id="subject"
-                        name="subject"
+                        id="name"
+                        name="name"
                         type="text"
                         required
                         className="border-pink-200 focus:border-primary focus:ring-primary"
-                        placeholder="How can we help you?"
+                        placeholder="Your full name"
                       />
                     </div>
-
                     <div>
-                      <label htmlFor="message" className="block mb-2 text-gray-700">
-                        Message *
+                      <label htmlFor="email" className="block mb-2 text-gray-700">
+                        Email Address *
                       </label>
-                      <Textarea
-                        id="message"
-                        name="message"
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
                         required
-                        className="border-pink-200 focus:border-primary focus:ring-primary min-h-32"
-                        placeholder="Please share your questions, ideas, or how you'd like to get involved..."
+                        className="border-pink-200 focus:border-primary focus:ring-primary"
+                        placeholder="your.email@example.com"
                       />
                     </div>
+                  </div>
 
-                    <p className="text-sm text-gray-600">
-                      Your message is sent through FormSubmit. You can also email us at{" "}
-                      <a className="underline" href={`mailto:${email}`}>{email}</a>.
-                    </p>
+                  <div>
+                    <label htmlFor="subject" className="block mb-2 text-gray-700">
+                      Subject *
+                    </label>
+                    <Input
+                      id="subject"
+                      name="subject"
+                      type="text"
+                      required
+                      className="border-pink-200 focus:border-primary focus:ring-primary"
+                      placeholder="How can we help you?"
+                    />
+                  </div>
 
-                    <Button
-                      type="submit"
-                      className="w-full bg-primary hover:bg-pink-600 text-white rounded-full py-3 text-lg transition-all duration-200 shadow-lg hover:shadow-xl"
-                    >
-                      <Send className="w-5 h-5 mr-2" />
-                      {pending ? "Sending…" : "Send Message"}
-                    </Button>
-                    {result === "accepted" && (
-                      <p role="status" className="text-sm text-gray-700">
-                        FormSubmit accepted your submission.
-                      </p>
-                    )}
-                    {result === "unconfirmed" && (
-                      <p role="alert" className="text-sm text-gray-700">
-                        We couldn’t confirm your submission. Your message is still here.
-                        You can try again or <a className="underline" href={`mailto:${email}`}>email us directly</a>.
-                      </p>
-                    )}
-                  </fieldset>
+                  <div>
+                    <label htmlFor="message" className="block mb-2 text-gray-700">
+                      Message *
+                    </label>
+                    <Textarea
+                      id="message"
+                      name="message"
+                      required
+                      className="border-pink-200 focus:border-primary focus:ring-primary min-h-32"
+                      placeholder="Please share your questions, ideas, or how you'd like to get involved..."
+                    />
+                  </div>
+
+                  <p className="text-sm text-gray-600">
+                    This opens a draft in your email app. Review it and click Send, or email us directly at{" "}
+                    <a className="underline" href={`mailto:${email}`}>{email}</a>.
+                  </p>
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-primary hover:bg-pink-600 text-white rounded-full py-3 text-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+                  >
+                    <Send className="w-5 h-5 mr-2" />
+                    Open Email Draft
+                  </Button>
                 </form>
               </Card>
             </div>
